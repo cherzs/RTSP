@@ -210,7 +210,7 @@ function App() {
         <Footer>
           <p>
             Built with React & Django | 
-            <FooterLink href="https://github.com/your-repo" target="_blank" rel="noopener noreferrer">
+            <FooterLink href="https://github.com/cherzs/RTSP" target="_blank" rel="noopener noreferrer">
               {' '}View Source Code
             </FooterLink>
           </p>
