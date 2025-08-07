@@ -11,7 +11,7 @@ import os
 import django
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rtsp_streamer.production_settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rtsp_streamer.settings')
 
 # Initialize Django before importing other modules
 django.setup()

@@ -21,23 +21,12 @@ if os.environ.get('DATABASE_URL'):
 # Redis configuration for production
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
-# Use InMemory channel layer if Redis not available (fallback for development)
-if REDIS_URL and REDIS_URL != 'redis://localhost:6379' and not REDIS_URL.startswith('redis-url-from'):
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [REDIS_URL],
-            },
-        },
-    }
-else:
-    # Fallback to InMemory for development or when Redis not properly configured
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels.layers.InMemoryChannelLayer',
-        },
-    }
+# Fallback to InMemory for now (simpler, more reliable)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # CORS for production - Update these with your actual domains
 CORS_ALLOWED_ORIGINS = [
@@ -47,7 +36,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://rtsp-cherzs.vercel.app",                         # Alternative domain
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False  # Set to False in production
+CORS_ALLOW_ALL_ORIGINS = True  # Temporary for debugging
 
 # Security settings for production
 SECURE_BROWSER_XSS_FILTER = True
