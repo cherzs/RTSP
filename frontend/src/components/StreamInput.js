@@ -107,11 +107,11 @@ const StreamInput = ({ onAddStream, loading }) => {
 
   const exampleStreams = [
     'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4',
-    'rtsp://192.168.18.14:8080/h264_ulaw.sdp',  // IP Webcam H264/uLaw
-    'rtsp://192.168.18.14:8080/h264_pcm.sdp',   // IP Webcam H264/PCM
-    'http://192.168.18.14:8080/video',          // IP Webcam HTTP stream
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'rtsp://192.168.18.14:8080/h264_ulaw.sdp',  // IP Webcam (local only)
+    'http://192.168.18.14:8080/video',          // IP Webcam HTTP (local only)
     'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4',
+    'rtsp://rtsp.stream/live',  // Public RTSP test
   ];
 
   const handleSubmit = (e) => {
