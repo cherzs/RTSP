@@ -106,7 +106,6 @@ const StreamInput = ({ onAddStream, loading }) => {
   const [title, setTitle] = useState('');
 
   const exampleStreams = [
-    'http://localhost:8080/mac_camera_longer.mp4',
     'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4',
     'rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0',
     'rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4',

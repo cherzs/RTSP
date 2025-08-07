@@ -159,6 +159,8 @@ const StreamViewer = ({ stream, onRemove }) => {
     setError(null);
 
     const wsUrl = `${config.WS_BASE_URL}/ws/stream/${stream.id}/`;
+    console.log('Connecting to WebSocket:', wsUrl);
+    console.log('Config WS_BASE_URL:', config.WS_BASE_URL);
     const websocket = new WebSocket(wsUrl);
     
     websocket.onopen = () => {

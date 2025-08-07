@@ -3,6 +3,10 @@
   "outputDirectory": "frontend/build",
   "installCommand": "cd frontend && npm install",
   "framework": null,
+  "env": {
+    "REACT_APP_BACKEND_URL": "https://rtsp-streamer-backend.onrender.com",
+    "REACT_APP_WS_URL": "wss://rtsp-streamer-backend.onrender.com"
+  },
   "rewrites": [
     {
       "source": "/(.*)",
