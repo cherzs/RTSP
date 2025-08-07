@@ -4,7 +4,7 @@ services:
     env: python
     plan: starter
     buildCommand: "./build.sh"
-    startCommand: "uvicorn rtsp_streamer.asgi:application --host 0.0.0.0 --port $PORT"
+    startCommand: "DJANGO_SETTINGS_MODULE=rtsp_streamer.production_settings uvicorn rtsp_streamer.asgi:application --host 0.0.0.0 --port $PORT"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: "rtsp_streamer.production_settings"
