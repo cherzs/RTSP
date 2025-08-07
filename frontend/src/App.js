@@ -182,7 +182,7 @@ function App() {
     <AppContainer>
       <Container>
         <Header>
-          <Title>📹 RTSP Stream Viewer</Title>
+          <Title> RTSP Stream Viewer</Title>
           <Subtitle>View live RTSP camera streams in your browser</Subtitle>
         </Header>
 

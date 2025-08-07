@@ -84,7 +84,7 @@ const StreamGrid = ({ streams, onRemoveStream, onClearAll }) => {
   if (streams.length === 0) {
     return (
       <EmptyState>
-        <EmptyStateIcon>📹</EmptyStateIcon>
+        <EmptyStateIcon></EmptyStateIcon>
         <EmptyStateText>No streams added yet</EmptyStateText>
         <EmptyStateSubtext>
           Add an RTSP stream URL above to start viewing live camera feeds. 

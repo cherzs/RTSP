@@ -1,4 +1,4 @@
-# 📹 RTSP Stream Viewer
+#  RTSP Stream Viewer
 
 A modern web application for viewing RTSP camera streams in real-time through your browser. Built with React frontend and Django backend using WebSocket technology for smooth video streaming.
 
@@ -423,7 +423,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**📹 Built with ❤️ using React.js, Django, and WebSocket technology**
+** Built with ❤️ using React.js, Django, and WebSocket technology**
 
 ### 🎯 Next Steps
 
