@@ -194,8 +194,14 @@ const StreamViewer = ({ stream, onRemove }) => {
 
     websocket.onerror = (error) => {
       console.error(`WebSocket error for stream ${stream.id}:`, error);
+      console.log('WebSocket readyState:', websocket.readyState);
+      console.log('Error details:', {
+        type: error.type,
+        target: error.target,
+        timeStamp: error.timeStamp
+      });
       setStatus('error');
-      setError('WebSocket connection failed');
+      setError('WebSocket connection failed - Check backend logs');
     };
   };
 

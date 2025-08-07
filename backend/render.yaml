@@ -18,12 +18,14 @@ services:
         value: "*"
       - key: DATABASE_URL
         value: "postgresql://postgres:SntwlimWMUXtBNCWOQUNVnECjPKptUop@yamabiko.proxy.rlwy.net:44506/railway"
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: rtsp-redis
-          property: connectionString
+      # Redis temporarily disabled - using InMemory fallback
+      # - key: REDIS_URL
+      #   fromService:
+      #     type: redis
+      #     name: rtsp-redis
+      #     property: connectionString
   
-  - type: redis
-    name: rtsp-redis
-    plan: starter
+  # Redis service temporarily disabled
+  # - type: redis
+  #   name: rtsp-redis
+  #   plan: starter
