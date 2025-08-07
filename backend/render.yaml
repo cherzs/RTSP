@@ -6,6 +6,8 @@ services:
     buildCommand: "./build.sh"
     startCommand: "uvicorn rtsp_streamer.asgi:application --host 0.0.0.0 --port $PORT"
     envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: "rtsp_streamer.production_settings"
       - key: PYTHON_VERSION
         value: "3.11"
       - key: DEBUG
@@ -16,6 +18,11 @@ services:
         value: "*"
       - key: DATABASE_URL
         value: "postgresql://postgres:SntwlimWMUXtBNCWOQUNVnECjPKptUop@yamabiko.proxy.rlwy.net:44506/railway"
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: rtsp-redis
+          property: connectionString
   
   - type: redis
     name: rtsp-redis
