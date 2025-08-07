@@ -1,3 +1,7 @@
+/**
+ * Individual RTSP stream viewer component
+ * Handles WebSocket connection, video display, and stream controls
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import config from '../config';

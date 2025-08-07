@@ -1,3 +1,7 @@
+/**
+ * RTSP URL input form component
+ * Allows users to add new streams with URL validation
+ */
 import React, { useState } from 'react';
 import styled from 'styled-components';
 

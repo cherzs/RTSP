@@ -1,3 +1,7 @@
+/**
+ * Grid layout component for displaying multiple RTSP streams
+ * Responsive grid that adapts to screen size and number of streams
+ */
 import React from 'react';
 import styled from 'styled-components';
 import StreamViewer from './StreamViewer';
