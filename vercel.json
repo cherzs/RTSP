@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/build",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "REACT_APP_BACKEND_URL": "https://rtsp-streamer-backend.onrender.com",
+    "REACT_APP_WS_URL": "wss://rtsp-streamer-backend.onrender.com"
+  }
+}
