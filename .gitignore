@@ -56,6 +56,12 @@ frontend/dist/
 *.mov
 *.mkv
 
+# Development scripts
+start-dev.sh
+
+# Local database
+db.sqlite3
+
 # IDE
 .vscode/
 .idea/
