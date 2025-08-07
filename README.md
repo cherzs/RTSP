@@ -4,9 +4,9 @@ A modern web application for viewing RTSP camera streams in real-time through yo
 
 ## 🚀 Live Demo
 
-- **Frontend**: https://your-repo-name.vercel.app (Vercel)
+- **Frontend**: https://rtsp-cherzs.vercel.app (Vercel)
 - **Backend**: https://rtsp-streamer-backend.onrender.com (Render)
-- **GitHub Repository**: https://github.com/yourusername/rtsp-stream-viewer
+- **GitHub Repository**: https://github.com/cherzs/RTSP
 
 ### Test RTSP Stream
 Use this working test stream: `rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0`
