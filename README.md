@@ -4,7 +4,7 @@ A modern web application for viewing RTSP camera streams in real-time through yo
 
 ## 🚀 Live Demo
 
-- **Frontend**: https://rtsp-cherzs.vercel.app (Vercel)
+- **Frontend**: https://rtsp-iota.vercel.app (Vercel)
 - **Backend**: https://rtsp-streamer-backend.onrender.com (Render)
 - **GitHub Repository**: https://github.com/cherzs/RTSP
 

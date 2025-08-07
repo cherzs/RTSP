@@ -32,8 +32,10 @@ CHANNEL_LAYERS = {
 
 # CORS for production - Update these with your actual domains
 CORS_ALLOWED_ORIGINS = [
-    "https://your-vercel-app.vercel.app",  # Replace with your Vercel domain
-    "https://your-custom-domain.com",     # Replace with your custom domain if any
+    "https://rtsp-iota.vercel.app",                           # Main Vercel domain
+    "https://rtsp-git-main-cherzs-projects.vercel.app",       # Git branch domain
+    "https://rtsp-alc1s7nde-cherzs-projects.vercel.app",      # Deployment domain
+    "https://rtsp-cherzs.vercel.app",                         # Alternative domain
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False  # Set to False in production
