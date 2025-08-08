@@ -94,6 +94,8 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 await self.handle_play()
             elif message_type == 'set_speed':
                 await self.handle_set_speed(data)
+            elif message_type == 'toggle_audio':
+                await self.handle_toggle_audio(data)
             else:
                 await self.send_error(f"Unknown message type: {message_type}")
                 
@@ -145,25 +147,31 @@ class StreamConsumer(AsyncWebsocketConsumer):
 
     async def handle_pause(self):
         """Handle pause request"""
+        logger.info(f"Pause requested for stream {self.stream_id}")
         if self.stream_processor:
             self.stream_processor.set_pause(True)
+            logger.info(f"Stream {self.stream_id} pause state set to True")
         
         await self.send(text_data=json.dumps({
             'type': 'stream_paused',
             'stream_id': self.stream_id,
             'message': 'Stream paused'
         }))
+        logger.info(f"Sent pause confirmation for stream {self.stream_id}")
 
     async def handle_play(self):
         """Handle play request"""
+        logger.info(f"Play/Resume requested for stream {self.stream_id}")
         if self.stream_processor:
             self.stream_processor.set_pause(False)
+            logger.info(f"Stream {self.stream_id} pause state set to False")
             
         await self.send(text_data=json.dumps({
             'type': 'stream_resumed',
             'stream_id': self.stream_id,
             'message': 'Stream resumed'
         }))
+        logger.info(f"Sent resume confirmation for stream {self.stream_id}")
 
     async def handle_set_speed(self, data):
         """Handle speed change request"""
@@ -179,6 +187,19 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 }))
             else:
                 await self.send_error(f"Invalid speed: {speed}. Range: 0.25x - 4x")
+
+    async def handle_toggle_audio(self, data):
+        """Handle audio toggle request"""
+        audio_enabled = data.get('audio_enabled', True)
+        
+        if self.stream_processor:
+            self.stream_processor.audio_enabled = audio_enabled
+            await self.send(text_data=json.dumps({
+                'type': 'audio_toggled',
+                'stream_id': self.stream_id,
+                'audio_enabled': audio_enabled,
+                'message': f'Audio {"enabled" if audio_enabled else "disabled"}'
+            }))
 
     async def send_error(self, message):
         """Send error message to client"""

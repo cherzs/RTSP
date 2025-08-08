@@ -187,6 +187,7 @@ const StreamViewer = ({ stream, onRemove }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [audioEnabled, setAudioEnabled] = useState(true);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -283,11 +284,16 @@ const StreamViewer = ({ stream, onRemove }) => {
         break;
 
       case 'stream_paused':
+        console.log('Stream paused message received');
         setIsPlaying(false);
         break;
 
       case 'speed_changed':
         setPlaybackSpeed(data.speed);
+        break;
+
+      case 'audio_toggled':
+        setAudioEnabled(data.audio_enabled);
         break;
         
       default:
@@ -296,18 +302,30 @@ const StreamViewer = ({ stream, onRemove }) => {
   };
 
   const handlePlay = () => {
+    console.log('Play button clicked, isPlaying:', isPlaying);
     if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.log('Connecting WebSocket...');
       connectWebSocket();
     } else {
-      ws.send(JSON.stringify({ type: 'play' }));
-      setIsPlaying(true);
+      // If paused, resume. If stopped, start.
+      if (!isPlaying) {
+        console.log('Sending play message to server');
+        ws.send(JSON.stringify({ type: 'play' }));
+        // Don't set isPlaying immediately - wait for server confirmation
+      } else {
+        console.log('Already playing, ignoring play request');
+      }
     }
   };
 
   const handlePause = () => {
+    console.log('Pause button clicked, isPlaying:', isPlaying);
     if (ws && ws.readyState === WebSocket.OPEN) {
+      console.log('Sending pause message to server');
       ws.send(JSON.stringify({ type: 'pause' }));
-      setIsPlaying(false);
+      // Don't set isPlaying false immediately - wait for server confirmation
+    } else {
+      console.log('WebSocket not ready, ws state:', ws?.readyState);
     }
   };
 
@@ -335,6 +353,17 @@ const StreamViewer = ({ stream, onRemove }) => {
         speed: speed 
       }));
       setPlaybackSpeed(speed);
+    }
+  };
+
+  const handleAudioToggle = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const newAudioState = !audioEnabled;
+      ws.send(JSON.stringify({ 
+        type: 'toggle_audio', 
+        audio_enabled: newAudioState 
+      }));
+      setAudioEnabled(newAudioState);
     }
   };
 
@@ -387,6 +416,16 @@ const StreamViewer = ({ stream, onRemove }) => {
           )}
           <ControlButton onClick={handleStop}>
             ⏹ Stop
+          </ControlButton>
+          <ControlButton 
+            onClick={handleAudioToggle}
+            disabled={status !== 'connected'}
+            style={{ 
+              backgroundColor: audioEnabled ? '#27ae60' : '#95a5a6',
+              fontSize: '0.8rem'
+            }}
+          >
+            {audioEnabled ? '🔊' : '🔇'} 
           </ControlButton>
         </div>
 

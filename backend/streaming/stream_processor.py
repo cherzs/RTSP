@@ -26,6 +26,7 @@ class StreamProcessor:
         self.thread = None
         self.playback_speed = 1.0  # Default normal speed
         self.is_paused = False
+        self.audio_enabled = True  # Enable audio support
         
     def add_consumer(self, consumer):
         """Add a WebSocket consumer to receive frames"""
@@ -343,18 +344,35 @@ class StreamProcessor:
                 'message': 'Attempting FFmpeg direct connection...'
             })
             
-            # Configure FFmpeg command for RTSP stream
-            ffmpeg_cmd = [
-                'ffmpeg',
-                '-rtsp_transport', 'tcp',  # Force TCP transport
-                '-i', self.rtsp_url,
-                '-vf', 'scale=640:-1',  # Resize to 640px width
-                '-c:v', 'mjpeg',  # MJPEG codec for easier processing
-                '-f', 'image2pipe',  # Output as image stream
-                '-r', '25',  # 25 FPS for smoother video
-                '-q:v', '5',  # Good quality
-                'pipe:1'
-            ]
+            # Configure FFmpeg command for RTSP stream with audio support
+            if self.audio_enabled:
+                ffmpeg_cmd = [
+                    'ffmpeg',
+                    '-rtsp_transport', 'tcp',  # Force TCP transport
+                    '-i', self.rtsp_url,
+                    '-vf', 'scale=640:-1',  # Resize to 640px width
+                    '-c:v', 'libx264',  # H.264 for better compatibility
+                    '-c:a', 'aac',  # AAC audio codec
+                    '-preset', 'ultrafast',  # Fast encoding
+                    '-tune', 'zerolatency',  # Low latency
+                    '-f', 'mp4',  # MP4 container for audio+video
+                    '-movflags', 'frag_keyframe+empty_moov',  # Streaming-friendly
+                    '-r', '25',  # 25 FPS
+                    'pipe:1'
+                ]
+            else:
+                # Video-only mode (original)
+                ffmpeg_cmd = [
+                    'ffmpeg',
+                    '-rtsp_transport', 'tcp',  # Force TCP transport
+                    '-i', self.rtsp_url,
+                    '-vf', 'scale=640:-1',  # Resize to 640px width
+                    '-c:v', 'mjpeg',  # MJPEG codec for easier processing
+                    '-f', 'image2pipe',  # Output as image stream
+                    '-r', '25',  # 25 FPS for smoother video
+                    '-q:v', '5',  # Good quality
+                    'pipe:1'
+                ]
             
             # Start FFmpeg process
             process = subprocess.Popen(
