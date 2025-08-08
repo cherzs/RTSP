@@ -8,8 +8,6 @@ import {
   FaPlay, 
   FaPause, 
   FaStop, 
-  FaVolumeUp, 
-  FaVolumeMute, 
   FaTrash,
   FaVideo,
   FaExclamationTriangle
@@ -24,7 +22,6 @@ const StreamViewer = ({ stream, onRemove }) => {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
-  const [audioEnabled, setAudioEnabled] = useState(true);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -120,10 +117,6 @@ const StreamViewer = ({ stream, onRemove }) => {
       case 'speed_changed':
         setPlaybackSpeed(data.speed);
         break;
-
-      case 'audio_toggled':
-        setAudioEnabled(data.audio_enabled);
-        break;
         
       default:
         console.log('Unknown message type:', data.type);
@@ -182,16 +175,7 @@ const StreamViewer = ({ stream, onRemove }) => {
     }
   };
 
-  const handleAudioToggle = () => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const newAudioState = !audioEnabled;
-      ws.send(JSON.stringify({ 
-        type: 'toggle_audio', 
-        audio_enabled: newAudioState 
-      }));
-      setAudioEnabled(newAudioState);
-    }
-  };
+
 
   const getStatusVariant = () => {
     switch (status) {
@@ -302,14 +286,6 @@ const StreamViewer = ({ stream, onRemove }) => {
             >
               <FaStop size={12} />
               Stop
-            </Button>
-            <Button 
-              variant={audioEnabled ? 'success' : 'outline-secondary'}
-              onClick={handleAudioToggle}
-              disabled={status !== 'connected'}
-              className="d-flex align-items-center gap-1"
-            >
-              {audioEnabled ? <FaVolumeUp size={14} /> : <FaVolumeMute size={14} />}
             </Button>
           </ButtonGroup>
 

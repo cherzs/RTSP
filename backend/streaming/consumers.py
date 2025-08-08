@@ -94,8 +94,6 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 await self.handle_play()
             elif message_type == 'set_speed':
                 await self.handle_set_speed(data)
-            elif message_type == 'toggle_audio':
-                await self.handle_toggle_audio(data)
             else:
                 await self.send_error(f"Unknown message type: {message_type}")
                 
@@ -188,18 +186,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
             else:
                 await self.send_error(f"Invalid speed: {speed}. Range: 0.25x - 4x")
 
-    async def handle_toggle_audio(self, data):
-        """Handle audio toggle request"""
-        audio_enabled = data.get('audio_enabled', True)
-        
-        if self.stream_processor:
-            self.stream_processor.audio_enabled = audio_enabled
-            await self.send(text_data=json.dumps({
-                'type': 'audio_toggled',
-                'stream_id': self.stream_id,
-                'audio_enabled': audio_enabled,
-                'message': f'Audio {"enabled" if audio_enabled else "disabled"}'
-            }))
+    
 
     async def send_error(self, message):
         """Send error message to client"""
