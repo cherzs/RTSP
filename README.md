@@ -146,7 +146,7 @@ npm start
 rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0
 
 # HTTP video (reliable for testing)
-https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4
+https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
 ```
 
 ### API Endpoints

@@ -12,10 +12,7 @@ const StreamInput = ({ onAddStream, loading }) => {
 
   const exampleStreams = [
     'rtsp://admin:admin123@49.248.155.178:555/cam/realmonitor?channel=1&subtype=0',
-    'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4',
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    'rtsp://192.168.18.14:8080/h264_ulaw.sdp',  // IP Webcam (local only)
-    'http://192.168.18.14:8080/video',          // IP Webcam HTTP (local only)
   ];
 
   const handleSubmit = (e) => {
