@@ -38,7 +38,7 @@ function App() {
         setStreams(data.results || data);
       }
     } catch (error) {
-      console.error('Error loading streams:', error);
+      // Handle error silently - streams will remain empty
     }
   };
 

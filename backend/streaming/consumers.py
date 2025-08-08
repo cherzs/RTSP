@@ -143,31 +143,25 @@ class StreamConsumer(AsyncWebsocketConsumer):
 
     async def handle_pause(self):
         """Handle pause request"""
-        logger.info(f"Pause requested for stream {self.stream_id}")
         if self.stream_processor:
             self.stream_processor.set_pause(True)
-            logger.info(f"Stream {self.stream_id} pause state set to True")
         
         await self.send(text_data=json.dumps({
             'type': 'stream_paused',
             'stream_id': self.stream_id,
             'message': 'Stream paused'
         }))
-        logger.info(f"Sent pause confirmation for stream {self.stream_id}")
 
     async def handle_play(self):
         """Handle play request"""
-        logger.info(f"Play/Resume requested for stream {self.stream_id}")
         if self.stream_processor:
             self.stream_processor.set_pause(False)
-            logger.info(f"Stream {self.stream_id} pause state set to False")
             
         await self.send(text_data=json.dumps({
             'type': 'stream_resumed',
             'stream_id': self.stream_id,
             'message': 'Stream resumed'
         }))
-        logger.info(f"Sent resume confirmation for stream {self.stream_id}")
 
     async def send_error(self, message):
         """Send error message to client"""

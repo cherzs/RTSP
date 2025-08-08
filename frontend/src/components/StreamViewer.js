@@ -40,11 +40,9 @@ const StreamViewer = ({ stream, onRemove }) => {
     setError(null);
 
     const wsUrl = `${config.WS_BASE_URL}/ws/stream/${stream.id}/`;
-    console.log('Connecting to WebSocket:', wsUrl);
     const websocket = new WebSocket(wsUrl);
     
     websocket.onopen = () => {
-      console.log(`WebSocket connected for stream ${stream.id}`);
       setStatus('connected');
       setWs(websocket);
       wsRef.current = websocket;
@@ -60,19 +58,18 @@ const StreamViewer = ({ stream, onRemove }) => {
         const data = JSON.parse(event.data);
         handleWebSocketMessage(data);
       } catch (err) {
-        console.error('Error parsing WebSocket message:', err);
+        // Handle parsing errors silently
+        setError('Invalid message format received');
       }
     };
 
     websocket.onclose = () => {
-      console.log(`WebSocket closed for stream ${stream.id}`);
       setStatus('disconnected');
       setIsPlaying(false);
       wsRef.current = null;
     };
 
     websocket.onerror = (error) => {
-      console.error(`WebSocket error for stream ${stream.id}:`, error);
       setStatus('error');
       setError('WebSocket connection failed - Check backend logs');
     };
@@ -81,7 +78,6 @@ const StreamViewer = ({ stream, onRemove }) => {
   const handleWebSocketMessage = (data) => {
     switch (data.type) {
       case 'connection_established':
-        console.log('WebSocket connection established');
         break;
         
       case 'stream_started':
@@ -109,37 +105,28 @@ const StreamViewer = ({ stream, onRemove }) => {
         break;
 
       case 'stream_paused':
-        console.log('Stream paused message received');
         setIsPlaying(false);
         break;
         
       default:
-        console.log('Unknown message type:', data.type);
+        // Handle unknown message types silently
+        break;
     }
   };
 
   const handlePlay = () => {
-    console.log('Play button clicked, isPlaying:', isPlaying);
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.log('Connecting WebSocket...');
       connectWebSocket();
     } else {
       if (!isPlaying) {
-        console.log('Sending play message to server');
         ws.send(JSON.stringify({ type: 'play' }));
-      } else {
-        console.log('Already playing, ignoring play request');
       }
     }
   };
 
   const handlePause = () => {
-    console.log('Pause button clicked, isPlaying:', isPlaying);
     if (ws && ws.readyState === WebSocket.OPEN) {
-      console.log('Sending pause message to server');
       ws.send(JSON.stringify({ type: 'pause' }));
-    } else {
-      console.log('WebSocket not ready, ws state:', ws?.readyState);
     }
   };
 
