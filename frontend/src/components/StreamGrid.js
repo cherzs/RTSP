@@ -1,131 +1,66 @@
 /**
- * Grid layout component for displaying multiple RTSP streams
- * Responsive grid that adapts to screen size and number of streams
+ * Bootstrap Grid layout component for displaying multiple RTSP streams
+ * Responsive grid with larger video cards - 2 per row on desktop
  */
 import React from 'react';
-import styled from 'styled-components';
+import { Row, Col, Card, Button } from 'react-bootstrap';
+import { FaVideo, FaTimes } from 'react-icons/fa';
 import StreamViewer from './StreamViewer';
-
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: #7f8c8d;
-`;
-
-const EmptyStateIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 20px;
-  opacity: 0.5;
-`;
-
-const EmptyStateText = styled.h3`
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  color: #5a6c7d;
-`;
-
-const EmptyStateSubtext = styled.p`
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 400px;
-  margin: 0 auto;
-`;
-
-const GridHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 0 5px;
-`;
-
-const StreamCount = styled.h2`
-  color: #2c3e50;
-  font-size: 1.5rem;
-  margin: 0;
-`;
-
-const GridControls = styled.div`
-  display: flex;
-  gap: 10px;
-  align-items: center;
-`;
-
-const ControlButton = styled.button`
-  background: white;
-  border: 2px solid #e0e0e0;
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #3498db;
-    color: #3498db;
-  }
-
-  &.active {
-    background-color: #3498db;
-    border-color: #3498db;
-    color: white;
-  }
-`;
 
 const StreamGrid = ({ streams, onRemoveStream, onClearAll }) => {
   if (streams.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateIcon></EmptyStateIcon>
-        <EmptyStateText>No streams added yet</EmptyStateText>
-        <EmptyStateSubtext>
-          Add an RTSP stream URL above to start viewing live camera feeds. 
-          You can add multiple streams and view them simultaneously in a grid layout.
-        </EmptyStateSubtext>
-      </EmptyState>
+      <Card className="text-center border-0 bg-light">
+        <Card.Body className="py-5">
+          <div className="mb-3" style={{ fontSize: '4rem', opacity: 0.5 }}>
+            <FaVideo className="text-muted" />
+          </div>
+          <Card.Title as="h3" className="text-muted mb-3">
+            No Streams Added Yet
+          </Card.Title>
+          <Card.Text className="text-muted mx-auto" style={{ maxWidth: '400px' }}>
+            Add your first RTSP stream using the form above. You can use one of the example URLs or provide your own camera stream.
+          </Card.Text>
+        </Card.Body>
+      </Card>
     );
   }
 
   return (
     <>
-      <GridHeader>
-        <StreamCount>
+      {/* Grid Header */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="text-dark mb-0">
           {streams.length} Stream{streams.length !== 1 ? 's' : ''}
-        </StreamCount>
-        <GridControls>
-          {streams.length > 1 && (
-            <ControlButton onClick={onClearAll}>
-              Clear All
-            </ControlButton>
-          )}
-        </GridControls>
-      </GridHeader>
+        </h4>
+        {streams.length > 0 && (
+          <Button
+            variant="outline-danger"
+            size="sm"
+            onClick={onClearAll}
+            className="d-flex align-items-center gap-2"
+          >
+            <FaTimes size={12} />
+            Clear All
+          </Button>
+        )}
+      </div>
 
-      <GridContainer>
+      {/* Responsive Grid - Larger video cards */}
+      <Row className="g-4">
         {streams.map((stream) => (
-          <StreamViewer
-            key={stream.id}
-            stream={stream}
-            onRemove={onRemoveStream}
-          />
+          <Col 
+            key={stream.id} 
+            xs={12}      // Mobile: 1 per row (full width)
+            lg={6}       // Desktop: 2 per row (half width each)
+          >
+            <StreamViewer 
+              stream={stream} 
+              onRemove={onRemoveStream} 
+            />
+          </Col>
         ))}
-      </GridContainer>
+      </Row>
     </>
   );
 };

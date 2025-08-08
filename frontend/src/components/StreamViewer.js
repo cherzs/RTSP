@@ -1,183 +1,20 @@
 /**
- * Individual RTSP stream viewer component
+ * Individual RTSP stream viewer component with Bootstrap
  * Handles WebSocket connection, video display, and stream controls
  */
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
+import { Card, Button, ButtonGroup, Badge, Alert } from 'react-bootstrap';
+import { 
+  FaPlay, 
+  FaPause, 
+  FaStop, 
+  FaVolumeUp, 
+  FaVolumeMute, 
+  FaTrash,
+  FaVideo,
+  FaExclamationTriangle
+} from 'react-icons/fa';
 import config from '../config';
-
-const StreamContainer = styled.div`
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  position: relative;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  }
-`;
-
-const StreamHeader = styled.div`
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const StreamTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0;
-  flex: 1;
-`;
-
-const StreamStatus = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const StatusIndicator = styled.div`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: ${props => {
-    switch (props.$status) {
-      case 'connected': return '#27ae60';
-      case 'connecting': return '#f39c12';
-      case 'error': return '#e74c3c';
-      default: return '#95a5a6';
-    }
-  }};
-`;
-
-const ViewerCount = styled.span`
-  font-size: 0.8rem;
-  color: #bdc3c7;
-`;
-
-const VideoContainer = styled.div`
-  position: relative;
-  width: 100%;
-  height: 300px;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const VideoElement = styled.img`
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-`;
-
-const PlaceholderText = styled.div`
-  color: #95a5a6;
-  text-align: center;
-  font-size: 1.1rem;
-`;
-
-const Controls = styled.div`
-  padding: 12px 16px;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const ControlButton = styled.button`
-  background-color: ${props => props.$variant === 'danger' ? '#e74c3c' : '#3498db'};
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.$variant === 'danger' ? '#c0392b' : '#2980b9'};
-  }
-
-  &:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
-  }
-`;
-
-const StreamInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const StreamUrl = styled.div`
-  font-size: 0.8rem;
-  color: #7f8c8d;
-  font-family: monospace;
-  word-break: break-all;
-`;
-
-const LastUpdate = styled.div`
-  font-size: 0.7rem;
-  color: #95a5a6;
-`;
-
-const ErrorMessage = styled.div`
-  color: #e74c3c;
-  background: #fdf2f2;
-  padding: 10px;
-  font-size: 0.9rem;
-  border-left: 4px solid #e74c3c;
-`;
-
-const SpeedControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-`;
-
-const SpeedButton = styled.button`
-  background-color: ${props => props.$active ? '#27ae60' : '#e9ecef'};
-  color: ${props => props.$active ? 'white' : '#495057'};
-  border: 1px solid ${props => props.$active ? '#27ae60' : '#dee2e6'};
-  padding: 3px 8px;
-  border-radius: 16px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 32px;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.$active ? '#229954' : '#27ae60'};
-    color: white;
-    border-color: #27ae60;
-  }
-
-  &:disabled {
-    background-color: #f8f9fa;
-    color: #adb5bd;
-    border-color: #dee2e6;
-    cursor: not-allowed;
-  }
-`;
-
-const SpeedLabel = styled.span`
-  font-size: 0.75rem;
-  color: #6c757d;
-  font-weight: 500;
-  margin-right: 6px;
-`;
 
 const StreamViewer = ({ stream, onRemove }) => {
   const [ws, setWs] = useState(null);
@@ -208,7 +45,6 @@ const StreamViewer = ({ stream, onRemove }) => {
 
     const wsUrl = `${config.WS_BASE_URL}/ws/stream/${stream.id}/`;
     console.log('Connecting to WebSocket:', wsUrl);
-    console.log('Config WS_BASE_URL:', config.WS_BASE_URL);
     const websocket = new WebSocket(wsUrl);
     
     websocket.onopen = () => {
@@ -217,7 +53,6 @@ const StreamViewer = ({ stream, onRemove }) => {
       setWs(websocket);
       wsRef.current = websocket;
       
-      // Start the stream
       websocket.send(JSON.stringify({
         type: 'start_stream',
         rtsp_url: stream.rtsp_url
@@ -242,12 +77,6 @@ const StreamViewer = ({ stream, onRemove }) => {
 
     websocket.onerror = (error) => {
       console.error(`WebSocket error for stream ${stream.id}:`, error);
-      console.log('WebSocket readyState:', websocket.readyState);
-      console.log('Error details:', {
-        type: error.type,
-        target: error.target,
-        timeStamp: error.timeStamp
-      });
       setStatus('error');
       setError('WebSocket connection failed - Check backend logs');
     };
@@ -307,11 +136,9 @@ const StreamViewer = ({ stream, onRemove }) => {
       console.log('Connecting WebSocket...');
       connectWebSocket();
     } else {
-      // If paused, resume. If stopped, start.
       if (!isPlaying) {
         console.log('Sending play message to server');
         ws.send(JSON.stringify({ type: 'play' }));
-        // Don't set isPlaying immediately - wait for server confirmation
       } else {
         console.log('Already playing, ignoring play request');
       }
@@ -323,7 +150,6 @@ const StreamViewer = ({ stream, onRemove }) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       console.log('Sending pause message to server');
       ws.send(JSON.stringify({ type: 'pause' }));
-      // Don't set isPlaying false immediately - wait for server confirmation
     } else {
       console.log('WebSocket not ready, ws state:', ws?.readyState);
     }
@@ -367,6 +193,15 @@ const StreamViewer = ({ stream, onRemove }) => {
     }
   };
 
+  const getStatusVariant = () => {
+    switch (status) {
+      case 'connected': return 'success';
+      case 'connecting': return 'warning';
+      case 'error': return 'danger';
+      default: return 'secondary';
+    }
+  };
+
   const getStatusText = () => {
     switch (status) {
       case 'connected': return 'Connected';
@@ -377,82 +212,148 @@ const StreamViewer = ({ stream, onRemove }) => {
   };
 
   return (
-    <StreamContainer>
-      <StreamHeader>
-        <StreamTitle>{stream.title || `Stream ${stream.id.slice(0, 8)}`}</StreamTitle>
-        <StreamStatus>
-          <StatusIndicator $status={status} />
-          <ViewerCount>{getStatusText()}</ViewerCount>
-        </StreamStatus>
-      </StreamHeader>
+    <Card className="h-100 shadow-sm">
+      {/* Header */}
+      <Card.Header className="bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
+        <Card.Title className="mb-0 h6">
+          {stream.title || `Stream ${stream.id.slice(0, 8)}`}
+        </Card.Title>
+        <Badge bg={getStatusVariant()}>
+          {getStatusText()}
+        </Badge>
+      </Card.Header>
 
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="danger" className="m-2 mb-0">
+          <small>{error}</small>
+        </Alert>
+      )}
 
-      <VideoContainer>
+      {/* Larger Video Container */}
+      <div 
+        className="position-relative bg-black d-flex align-items-center justify-content-center"
+        style={{ 
+          height: '350px',  // Increased from 250px to 350px
+          minHeight: '350px'  // Ensure minimum height
+        }}
+      >
         {currentFrame ? (
-          <VideoElement src={currentFrame} alt="Live stream" />
-        ) : (
-          <PlaceholderText>
-            {status === 'connecting' 
-              ? 'Connecting to stream...' 
-              : status === 'error' 
-                ? 'Stream unavailable' 
-                : 'Click Play to start stream'
-            }
-          </PlaceholderText>
-        )}
-      </VideoContainer>
-
-      <Controls>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {!isPlaying ? (
-            <ControlButton onClick={handlePlay} disabled={status === 'connecting'}>
-              ▶ Play
-            </ControlButton>
-          ) : (
-            <ControlButton onClick={handlePause}>
-              ⏸ Pause
-            </ControlButton>
-          )}
-          <ControlButton onClick={handleStop}>
-            ⏹ Stop
-          </ControlButton>
-          <ControlButton 
-            onClick={handleAudioToggle}
-            disabled={status !== 'connected'}
+          <img 
+            src={currentFrame} 
+            alt="Live stream" 
+            className="img-fluid"
             style={{ 
-              backgroundColor: audioEnabled ? '#27ae60' : '#95a5a6',
-              fontSize: '0.8rem'
+              maxHeight: '100%', 
+              maxWidth: '100%',
+              objectFit: 'contain' 
             }}
+          />
+        ) : (
+          <div className="text-center text-muted">
+            <div className="mb-3" style={{ fontSize: '3rem', opacity: 0.6 }}>
+              {status === 'error' ? (
+                <FaExclamationTriangle className="text-warning" />
+              ) : (
+                <FaVideo />
+              )}
+            </div>
+            <div style={{ fontSize: '0.9rem' }}>
+              {status === 'connecting' 
+                ? 'Connecting to stream...' 
+                : status === 'error' 
+                  ? 'Stream unavailable' 
+                  : 'Click Play to start stream'
+              }
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Controls */}
+      <Card.Body className="p-3">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          {/* Play Controls */}
+          <ButtonGroup>
+            {!isPlaying ? (
+              <Button 
+                variant="primary" 
+                onClick={handlePlay} 
+                disabled={status === 'connecting'}
+                className="d-flex align-items-center gap-2"
+              >
+                <FaPlay size={12} />
+                Play
+              </Button>
+            ) : (
+              <Button 
+                variant="warning" 
+                onClick={handlePause}
+                className="d-flex align-items-center gap-2"
+              >
+                <FaPause size={12} />
+                Pause
+              </Button>
+            )}
+            <Button 
+              variant="secondary" 
+              onClick={handleStop}
+              className="d-flex align-items-center gap-2"
+            >
+              <FaStop size={12} />
+              Stop
+            </Button>
+            <Button 
+              variant={audioEnabled ? 'success' : 'outline-secondary'}
+              onClick={handleAudioToggle}
+              disabled={status !== 'connected'}
+              className="d-flex align-items-center gap-1"
+            >
+              {audioEnabled ? <FaVolumeUp size={14} /> : <FaVolumeMute size={14} />}
+            </Button>
+          </ButtonGroup>
+
+          {/* Remove Button */}
+          <Button 
+            variant="outline-danger" 
+            onClick={handleRemove}
+            className="d-flex align-items-center gap-2"
           >
-            {audioEnabled ? '🔊' : '🔇'} 
-          </ControlButton>
+            <FaTrash size={12} />
+            Remove
+          </Button>
         </div>
 
-        <SpeedControls>
-          <SpeedLabel>Speed:</SpeedLabel>
+        {/* Speed Controls */}
+        <div className="d-flex align-items-center flex-wrap gap-2 mb-3">
+          <span className="text-muted me-2">Speed:</span>
           {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
-            <SpeedButton
+            <Button
               key={speed}
-              $active={playbackSpeed === speed}
+              variant={playbackSpeed === speed ? 'primary' : 'outline-secondary'}
+              size="sm"
               onClick={() => handleSpeedChange(speed)}
               disabled={status !== 'connected'}
+              style={{ minWidth: '50px' }}
             >
               {speed}x
-            </SpeedButton>
+            </Button>
           ))}
-        </SpeedControls>
+        </div>
 
-        <ControlButton $variant="danger" onClick={handleRemove}>
-          Remove
-        </ControlButton>
-      </Controls>
-
-      <StreamInfo>
-        <StreamUrl>{stream.rtsp_url}</StreamUrl>
-        {lastUpdate && <LastUpdate>Last update: {lastUpdate}</LastUpdate>}
-      </StreamInfo>
-    </StreamContainer>
+        {/* Stream Info */}
+        <div className="border-top pt-2">
+          <small className="text-muted d-block text-truncate">
+            {stream.rtsp_url}
+          </small>
+          {lastUpdate && (
+            <small className="text-muted">
+              Last update: {lastUpdate}
+            </small>
+          )}
+        </div>
+      </Card.Body>
+    </Card>
   );
 };
 

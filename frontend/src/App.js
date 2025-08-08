@@ -1,96 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { FaVideo, FaSignal, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import StreamInput from './components/StreamInput';
 import StreamGrid from './components/StreamGrid';
 import config from './config';
-
-const AppContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg,rgb(45, 50, 70) 0%,rgb(113, 109, 117) 100%);
-  padding: 20px 0;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-`;
-
-const Header = styled.header`
-  text-align: center;
-  margin-bottom: 32px;
-  color: white;
-`;
-
-const Title = styled.h1`
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-
-  @media (max-width: 768px) {
-    font-size: 2.2rem;
-  }
-`;
-
-const Subtitle = styled.p`
-  font-size: 1.2rem;
-  opacity: 0.9;
-  font-weight: 300;
-`;
-
-const MainContent = styled.main`
-  background: rgba(255, 255, 255, 0.98);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-`;
-
-const StatusBar = styled.div`
-  background: ${props => props.type === 'error' ? '#e74c3c' : props.type === 'success' ? '#27ae60' : '#3498db'};
-  color: white;
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: slideIn 0.3s ease;
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const Footer = styled.footer`
-  text-align: center;
-  margin-top: 40px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
-`;
-
-const FooterLink = styled.a`
-  color: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+import './App.css';
 
 function App() {
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
@@ -98,18 +19,16 @@ function App() {
         if (response.ok) {
           showMessage('Backend connected successfully', 'success');
         } else {
-          showMessage('Backend is not responding properly', 'error');
+          showMessage('Backend is not responding properly', 'danger');
         }
       } catch (error) {
-        showMessage('Cannot connect to backend. Please ensure it is running.', 'error');
+        showMessage('Cannot connect to backend. Please ensure it is running.', 'danger');
       }
     };
 
     checkBackendHealth();
     loadStreams();
   }, []);
-
-
 
   const loadStreams = async () => {
     try {
@@ -145,10 +64,10 @@ function App() {
         showMessage(`Stream "${newStream.title}" added successfully!`, 'success');
       } else {
         const errorData = await response.json();
-        showMessage(`Error adding stream: ${errorData.detail || 'Unknown error'}`, 'error');
+        showMessage(`Error adding stream: ${errorData.detail || 'Unknown error'}`, 'danger');
       }
     } catch (error) {
-      showMessage(`Network error: ${error.message}`, 'error');
+      showMessage(`Network error: ${error.message}`, 'danger');
     } finally {
       setLoading(false);
     }
@@ -164,10 +83,10 @@ function App() {
         setStreams(prev => prev.filter(stream => stream.id !== streamId));
         showMessage('Stream removed successfully', 'success');
       } else {
-        showMessage('Error removing stream', 'error');
+        showMessage('Error removing stream', 'danger');
       }
     } catch (error) {
-      showMessage(`Network error: ${error.message}`, 'error');
+      showMessage(`Network error: ${error.message}`, 'danger');
     }
   };
 
@@ -180,44 +99,67 @@ function App() {
   };
 
   return (
-    <AppContainer>
-      <Container>
-        <Header>
-          <Title> RTSP Stream Viewer</Title>
-          <Subtitle>View live RTSP camera streams in your browser</Subtitle>
-        </Header>
+    <div className="app-container">
+      <Container fluid className="py-4">
+        <Row>
+          <Col>
+            {/* Header */}
+            <header className="text-center mb-4 text-white">
+              <h1 className="display-4 fw-bold mb-2 d-flex align-items-center justify-content-center gap-3">
+                <FaVideo className="text-primary" />
+                RTSP Stream Viewer
+              </h1>
+              <p className="lead opacity-75 d-flex align-items-center justify-content-center gap-2">
+                <FaSignal size={18} />
+                View live RTSP camera streams in your browser
+              </p>
+            </header>
 
-        <MainContent>
-          {message && (
-            <StatusBar type={message.type}>
-              <span>
-                {message.type === 'error' && '❌'}
-                {message.type === 'success' && ''}
-                {message.type === 'info' && 'ℹ️'}
-              </span>
-              {message.text}
-            </StatusBar>
-          )}
+            {/* Main Content */}
+            <main className="main-content">
+              {message && (
+                <Alert 
+                  variant={message.type} 
+                  dismissible 
+                  onClose={() => setMessage(null)}
+                  className="d-flex align-items-center"
+                >
+                  <span className="me-2">
+                    {message.type === 'danger' && <FaExclamationTriangle />}
+                    {message.type === 'success' && <FaCheckCircle />}
+                    {message.type === 'info' && <FaSignal />}
+                  </span>
+                  {message.text}
+                </Alert>
+              )}
 
-          <StreamInput onAddStream={handleAddStream} loading={loading} />
-          
-          <StreamGrid 
-            streams={streams} 
-            onRemoveStream={handleRemoveStream}
-            onClearAll={handleClearAll}
-          />
-        </MainContent>
+              <StreamInput onAddStream={handleAddStream} loading={loading} />
+              
+              <StreamGrid 
+                streams={streams} 
+                onRemoveStream={handleRemoveStream}
+                onClearAll={handleClearAll}
+              />
+            </main>
 
-        <Footer>
-          <p>
-            Built with React & Django | 
-            <FooterLink href="https://github.com/cherzs/RTSP" target="_blank" rel="noopener noreferrer">
-              {' '}View Source Code
-            </FooterLink>
-          </p>
-        </Footer>
+            {/* Footer */}
+            <footer className="text-center mt-5 text-white-50">
+              <p className="mb-0">
+                Built with React & Django | 
+                <a 
+                  href="https://github.com/cherzs/RTSP" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white-50 text-decoration-none ms-1"
+                >
+                  View Source Code
+                </a>
+              </p>
+            </footer>
+          </Col>
+        </Row>
       </Container>
-    </AppContainer>
+    </div>
   );
 }
 
