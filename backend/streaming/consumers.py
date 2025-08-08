@@ -12,6 +12,7 @@ class StreamConsumer(AsyncWebsocketConsumer):
         self.stream_id = self.scope['url_route']['kwargs']['stream_id']
         self.group_name = f'stream_{self.stream_id}'
         self.stream_processor = None
+        self.pending_messages = []  # For thread-safe message queuing
         
         # Join stream group
         await self.channel_layer.group_add(
@@ -29,6 +30,19 @@ class StreamConsumer(AsyncWebsocketConsumer):
         }))
         
         logger.info(f"WebSocket connected for stream {self.stream_id}")
+        
+        # Start processing pending messages
+        await self.process_pending_messages()
+
+    async def process_pending_messages(self):
+        """Process any pending messages from stream processor"""
+        if hasattr(self, 'pending_messages') and self.pending_messages:
+            for message in self.pending_messages:
+                try:
+                    await self.send_json(message)
+                except Exception as e:
+                    logger.error(f"Error sending pending message: {e}")
+            self.pending_messages.clear()
 
     async def disconnect(self, close_code):
         # Leave stream group
@@ -44,6 +58,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
         logger.info(f"WebSocket disconnected for stream {self.stream_id}")
 
     async def receive(self, text_data):
+        # Process any pending messages first
+        await self.process_pending_messages()
+        
         try:
             data = json.loads(text_data)
             message_type = data.get('type')
@@ -56,6 +73,8 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 await self.handle_pause()
             elif message_type == 'play':
                 await self.handle_play()
+            elif message_type == 'set_speed':
+                await self.handle_set_speed(data)
             else:
                 await self.send_error(f"Unknown message type: {message_type}")
                 
@@ -107,19 +126,40 @@ class StreamConsumer(AsyncWebsocketConsumer):
 
     async def handle_pause(self):
         """Handle pause request"""
+        if self.stream_processor:
+            self.stream_processor.set_pause(True)
+        
         await self.send(text_data=json.dumps({
             'type': 'stream_paused',
             'stream_id': self.stream_id,
-            'message': 'Stream paused (client-side)'
+            'message': 'Stream paused'
         }))
 
     async def handle_play(self):
         """Handle play request"""
+        if self.stream_processor:
+            self.stream_processor.set_pause(False)
+            
         await self.send(text_data=json.dumps({
             'type': 'stream_resumed',
             'stream_id': self.stream_id,
             'message': 'Stream resumed'
         }))
+
+    async def handle_set_speed(self, data):
+        """Handle speed change request"""
+        speed = data.get('speed', 1.0)
+        
+        if self.stream_processor:
+            if self.stream_processor.set_playback_speed(speed):
+                await self.send(text_data=json.dumps({
+                    'type': 'speed_changed',
+                    'stream_id': self.stream_id,
+                    'speed': speed,
+                    'message': f'Playback speed set to {speed}x'
+                }))
+            else:
+                await self.send_error(f"Invalid speed: {speed}. Range: 0.25x - 4x")
 
     async def send_error(self, message):
         """Send error message to client"""

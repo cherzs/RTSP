@@ -137,6 +137,40 @@ const ErrorMessage = styled.div`
   border-left: 4px solid #e74c3c;
 `;
 
+const SpeedControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+`;
+
+const SpeedButton = styled.button`
+  background-color: ${props => props.$active ? '#27ae60' : '#bdc3c7'};
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.$active ? '#229954' : '#95a5a6'};
+  }
+
+  &:disabled {
+    background-color: #ecf0f1;
+    color: #95a5a6;
+    cursor: not-allowed;
+  }
+`;
+
+const SpeedLabel = styled.span`
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  font-weight: 500;
+`;
+
 const StreamViewer = ({ stream, onRemove }) => {
   const [ws, setWs] = useState(null);
   const [status, setStatus] = useState('disconnected');
@@ -144,6 +178,7 @@ const StreamViewer = ({ stream, onRemove }) => {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -242,6 +277,10 @@ const StreamViewer = ({ stream, onRemove }) => {
       case 'stream_paused':
         setIsPlaying(false);
         break;
+
+      case 'speed_changed':
+        setPlaybackSpeed(data.speed);
+        break;
         
       default:
         console.log('Unknown message type:', data.type);
@@ -279,6 +318,16 @@ const StreamViewer = ({ stream, onRemove }) => {
   const handleRemove = () => {
     handleStop();
     onRemove(stream.id);
+  };
+
+  const handleSpeedChange = (speed) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ 
+        type: 'set_speed', 
+        speed: speed 
+      }));
+      setPlaybackSpeed(speed);
+    }
   };
 
   const getStatusText = () => {
@@ -332,6 +381,20 @@ const StreamViewer = ({ stream, onRemove }) => {
             ⏹ Stop
           </ControlButton>
         </div>
+
+        <SpeedControls>
+          <SpeedLabel>Speed:</SpeedLabel>
+          {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+            <SpeedButton
+              key={speed}
+              $active={playbackSpeed === speed}
+              onClick={() => handleSpeedChange(speed)}
+              disabled={status !== 'connected'}
+            >
+              {speed}x
+            </SpeedButton>
+          ))}
+        </SpeedControls>
 
         <ControlButton $variant="danger" onClick={handleRemove}>
           🗑 Remove

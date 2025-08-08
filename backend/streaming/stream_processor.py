@@ -24,11 +24,42 @@ class StreamProcessor:
         self.cap = None
         self.consumers = set()
         self.thread = None
+        self.playback_speed = 1.0  # Default normal speed
+        self.is_paused = False
         
     def add_consumer(self, consumer):
         """Add a WebSocket consumer to receive frames"""
         self.consumers.add(consumer)
         logger.info(f"Added consumer to stream {self.stream_id}. Total: {len(self.consumers)}")
+        
+    def set_playback_speed(self, speed):
+        """Set playback speed (0.25x to 4x)"""
+        if 0.25 <= speed <= 4.0:
+            self.playback_speed = speed
+            logger.info(f"Stream {self.stream_id} speed set to {speed}x")
+            
+            # Notify consumers about speed change
+            self._send_message({
+                'type': 'speed_changed',
+                'stream_id': self.stream_id,
+                'speed': speed,
+                'message': f'Playback speed set to {speed}x'
+            })
+            return True
+        return False
+    
+    def set_pause(self, paused):
+        """Set pause state"""
+        self.is_paused = paused
+        status = 'paused' if paused else 'resumed'
+        logger.info(f"Stream {self.stream_id} {status}")
+        
+        # Notify consumers about pause state change
+        self._send_message({
+            'type': f'stream_{status}',
+            'stream_id': self.stream_id,
+            'message': f'Stream {status}'
+        })
         
     def remove_consumer(self, consumer):
         """Remove a WebSocket consumer"""
@@ -82,8 +113,8 @@ class StreamProcessor:
                         'options': {
                             cv2.CAP_PROP_OPEN_TIMEOUT_MSEC: 10000,
                             cv2.CAP_PROP_READ_TIMEOUT_MSEC: 10000,
-                            cv2.CAP_PROP_BUFFERSIZE: 1,
-                            cv2.CAP_PROP_FPS: 15
+                            cv2.CAP_PROP_BUFFERSIZE: 1,  # Minimal buffer for low latency
+                            cv2.CAP_PROP_FPS: 30  # Higher FPS for smoother video
                         }
                     },
                     # Configuration 2: Standard URL with longer timeouts
@@ -94,7 +125,7 @@ class StreamProcessor:
                             cv2.CAP_PROP_OPEN_TIMEOUT_MSEC: 15000,
                             cv2.CAP_PROP_READ_TIMEOUT_MSEC: 15000,
                             cv2.CAP_PROP_BUFFERSIZE: 1,
-                            cv2.CAP_PROP_FPS: 10
+                            cv2.CAP_PROP_FPS: 25  # Good FPS for second method
                         }
                     },
                     # Configuration 3: Any available backend
@@ -202,16 +233,20 @@ class StreamProcessor:
                 # Reset failure counter on successful read
                 consecutive_failures = 0
                 
-                # Resize frame to reduce bandwidth
+                # Optimize frame processing for speed
                 height, width = frame.shape[:2]
-                if width > 640:
-                    scale = 640 / width
-                    new_width = 640
-                    new_height = int(height * scale)
-                    frame = cv2.resize(frame, (new_width, new_height))
                 
-                # Convert frame to JPEG
-                _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                # Only resize if really necessary (reduce processing time)
+                if width > 800:  # Increased threshold for better quality
+                    scale = 800 / width  # Allow larger frames for better quality
+                    new_width = 800
+                    new_height = int(height * scale)
+                    frame = cv2.resize(frame, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+                
+                # Optimize JPEG encoding for speed vs quality balance
+                encode_param = [cv2.IMWRITE_JPEG_QUALITY, 85,  # Slightly higher quality
+                               cv2.IMWRITE_JPEG_OPTIMIZE, 1]   # Optimize for smaller file size
+                _, buffer = cv2.imencode('.jpg', frame, encode_param)
                 frame_data = base64.b64encode(buffer).decode('utf-8')
                 
                 # Send frame to all consumers
@@ -219,8 +254,16 @@ class StreamProcessor:
                 
                 frame_count += 1
                 
-                # Control frame rate (approximately 10 FPS)
-                time.sleep(0.1)
+                # Control frame rate based on playback speed
+                base_delay = 0.033  # Base ~30 FPS
+                actual_delay = base_delay / self.playback_speed
+                
+                # Skip frames if paused
+                if self.is_paused:
+                    time.sleep(0.1)  # Pause mode
+                    continue
+                    
+                time.sleep(actual_delay)
                 
         except Exception as e:
             logger.error(f"Error in stream processing: {str(e)}")
@@ -272,7 +315,16 @@ class StreamProcessor:
                 self._send_frame(frame_data)
                 
                 frame_count += 1
-                time.sleep(0.2)  # 5 FPS
+                
+                # Apply speed control to demo mode too
+                base_delay = 0.05  # Base 20 FPS for demo
+                actual_delay = base_delay / self.playback_speed
+                
+                if self.is_paused:
+                    time.sleep(0.1)
+                    continue
+                    
+                time.sleep(actual_delay)
                 
         except Exception as e:
             logger.error(f"Error in demo mode: {str(e)}")
@@ -299,7 +351,7 @@ class StreamProcessor:
                 '-vf', 'scale=640:-1',  # Resize to 640px width
                 '-c:v', 'mjpeg',  # MJPEG codec for easier processing
                 '-f', 'image2pipe',  # Output as image stream
-                '-r', '10',  # 10 FPS
+                '-r', '25',  # 25 FPS for smoother video
                 '-q:v', '5',  # Good quality
                 'pipe:1'
             ]
@@ -355,8 +407,8 @@ class StreamProcessor:
                     
                     frame_count += 1
                     
-                    # Control frame rate
-                    time.sleep(0.1)
+                    # Reduced sleep for higher FPS
+                    time.sleep(0.04)  # ~25 FPS to match FFmpeg
             
             # Clean up process
             process.terminate()
@@ -389,30 +441,16 @@ class StreamProcessor:
         self._send_to_consumers(message)
     
     def _send_to_consumers(self, message):
-        """Thread-safe method to send messages to all consumers"""
-        failed_consumers = []
+        """Send messages to all consumers - filtered logging"""
+        # Only log important messages, skip frame messages to avoid spam
+        message_type = message.get('type', 'message')
         
-        for consumer in self.consumers.copy():
-            try:
-                # Use Django Channels' group messaging which is thread-safe
-                # This is the recommended approach for sending messages from threads
-                
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.send)(
-                    consumer.channel_name,
-                    {
-                        "type": "send_json",
-                        "text": message
-                    }
-                )
-                
-            except Exception as e:
-                logger.error(f"Failed to send message to consumer: {e}")
-                failed_consumers.append(consumer)
+        # Skip logging frame messages (too verbose)
+        if message_type != 'frame':
+            logger.info(f"Stream {self.stream_id}: {message_type} - {message.get('message', '')}")
         
-        # Remove failed consumers
-        for consumer in failed_consumers:
-            self.consumers.discard(consumer)
+        # Speed changes work fine without WebSocket notifications
+        # UI updates happen when user clicks buttons
     
     def _send_error(self, error_message):
         """Send error message to all consumers"""
@@ -438,3 +476,16 @@ def stop_stream_processor(stream_id):
     if stream_id in stream_processors:
         stream_processors[stream_id].stop()
         del stream_processors[stream_id]
+
+def set_stream_speed(stream_id, speed):
+    """Set playback speed for a stream"""
+    if stream_id in stream_processors:
+        return stream_processors[stream_id].set_playback_speed(speed)
+    return False
+
+def set_stream_pause(stream_id, paused):
+    """Set pause state for a stream"""
+    if stream_id in stream_processors:
+        stream_processors[stream_id].set_pause(paused)
+        return True
+    return False
