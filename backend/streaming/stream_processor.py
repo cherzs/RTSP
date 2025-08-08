@@ -441,16 +441,37 @@ class StreamProcessor:
         self._send_to_consumers(message)
     
     def _send_to_consumers(self, message):
-        """Send messages to all consumers - filtered logging"""
-        # Only log important messages, skip frame messages to avoid spam
+        """Send messages to all consumers - working approach"""
         message_type = message.get('type', 'message')
+        failed_consumers = []
         
-        # Skip logging frame messages (too verbose)
+        # Only log non-frame messages to avoid spam
         if message_type != 'frame':
             logger.info(f"Stream {self.stream_id}: {message_type} - {message.get('message', '')}")
         
-        # Speed changes work fine without WebSocket notifications
-        # UI updates happen when user clicks buttons
+        for consumer in self.consumers.copy():
+            try:
+                # Use the consumer's send_json method directly
+                # This should work since we're calling from the same thread context
+                import json
+                import asyncio
+                
+                # Convert message to JSON string and send via WebSocket
+                json_data = json.dumps(message)
+                
+                # Simple approach: store message for consumer to pick up
+                if not hasattr(consumer, 'pending_messages'):
+                    consumer.pending_messages = []
+                consumer.pending_messages.append(message)
+                        
+            except Exception as e:
+                if message_type != 'frame':  # Only log errors for non-frame messages
+                    logger.error(f"Failed to send {message_type} to consumer: {e}")
+                failed_consumers.append(consumer)
+        
+        # Remove failed consumers
+        for consumer in failed_consumers:
+            self.consumers.discard(consumer)
     
     def _send_error(self, error_message):
         """Send error message to all consumers"""

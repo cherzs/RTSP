@@ -33,6 +33,9 @@ class StreamConsumer(AsyncWebsocketConsumer):
         
         # Start processing pending messages
         await self.process_pending_messages()
+        
+        # Start periodic task to process messages
+        self.start_message_processor()
 
     async def process_pending_messages(self):
         """Process any pending messages from stream processor"""
@@ -43,6 +46,22 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 except Exception as e:
                     logger.error(f"Error sending pending message: {e}")
             self.pending_messages.clear()
+
+    def start_message_processor(self):
+        """Start periodic task to process pending messages"""
+        import asyncio
+        
+        async def message_processor():
+            while True:
+                try:
+                    await self.process_pending_messages()
+                    await asyncio.sleep(0.01)  # Process every 10ms for smooth video
+                except Exception as e:
+                    logger.error(f"Message processor error: {e}")
+                    await asyncio.sleep(0.1)
+        
+        # Start the task
+        asyncio.create_task(message_processor())
 
     async def disconnect(self, close_code):
         # Leave stream group
