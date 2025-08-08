@@ -24,7 +24,7 @@ class StreamProcessor:
         self.cap = None
         self.consumers = set()
         self.thread = None
-        self.playback_speed = 1.0  # Default normal speed
+
         self.is_paused = False
         
     def add_consumer(self, consumer):
@@ -32,22 +32,6 @@ class StreamProcessor:
         self.consumers.add(consumer)
         logger.info(f"Added consumer to stream {self.stream_id}. Total: {len(self.consumers)}")
         
-    def set_playback_speed(self, speed):
-        """Set playback speed (0.25x to 4x)"""
-        if 0.25 <= speed <= 4.0:
-            self.playback_speed = speed
-            logger.info(f"Stream {self.stream_id} speed set to {speed}x")
-            
-            # Notify consumers about speed change
-            self._send_message({
-                'type': 'speed_changed',
-                'stream_id': self.stream_id,
-                'speed': speed,
-                'message': f'Playback speed set to {speed}x'
-            })
-            return True
-        return False
-    
     def set_pause(self, paused):
         """Set pause state"""
         self.is_paused = paused
@@ -254,16 +238,15 @@ class StreamProcessor:
                 
                 frame_count += 1
                 
-                # Control frame rate based on playback speed
-                base_delay = 0.033  # Base ~30 FPS
-                actual_delay = base_delay / self.playback_speed
+                # Control frame rate
+                frame_delay = 0.033  # ~30 FPS
                 
                 # Skip frames if paused
                 if self.is_paused:
                     time.sleep(0.1)  # Pause mode
                     continue
                     
-                time.sleep(actual_delay)
+                time.sleep(frame_delay)
                 
         except Exception as e:
             logger.error(f"Error in stream processing: {str(e)}")
@@ -316,15 +299,14 @@ class StreamProcessor:
                 
                 frame_count += 1
                 
-                # Apply speed control to demo mode too
-                base_delay = 0.05  # Base 20 FPS for demo
-                actual_delay = base_delay / self.playback_speed
+                # Frame rate control for demo mode
+                demo_delay = 0.05  # 20 FPS for demo
                 
                 if self.is_paused:
                     time.sleep(0.1)
                     continue
                     
-                time.sleep(actual_delay)
+                time.sleep(demo_delay)
                 
         except Exception as e:
             logger.error(f"Error in demo mode: {str(e)}")
@@ -498,11 +480,6 @@ def stop_stream_processor(stream_id):
         stream_processors[stream_id].stop()
         del stream_processors[stream_id]
 
-def set_stream_speed(stream_id, speed):
-    """Set playback speed for a stream"""
-    if stream_id in stream_processors:
-        return stream_processors[stream_id].set_playback_speed(speed)
-    return False
 
 def set_stream_pause(stream_id, paused):
     """Set pause state for a stream"""

@@ -92,8 +92,6 @@ class StreamConsumer(AsyncWebsocketConsumer):
                 await self.handle_pause()
             elif message_type == 'play':
                 await self.handle_play()
-            elif message_type == 'set_speed':
-                await self.handle_set_speed(data)
             else:
                 await self.send_error(f"Unknown message type: {message_type}")
                 
@@ -170,23 +168,6 @@ class StreamConsumer(AsyncWebsocketConsumer):
             'message': 'Stream resumed'
         }))
         logger.info(f"Sent resume confirmation for stream {self.stream_id}")
-
-    async def handle_set_speed(self, data):
-        """Handle speed change request"""
-        speed = data.get('speed', 1.0)
-        
-        if self.stream_processor:
-            if self.stream_processor.set_playback_speed(speed):
-                await self.send(text_data=json.dumps({
-                    'type': 'speed_changed',
-                    'stream_id': self.stream_id,
-                    'speed': speed,
-                    'message': f'Playback speed set to {speed}x'
-                }))
-            else:
-                await self.send_error(f"Invalid speed: {speed}. Range: 0.25x - 4x")
-
-    
 
     async def send_error(self, message):
         """Send error message to client"""

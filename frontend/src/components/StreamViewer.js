@@ -21,7 +21,6 @@ const StreamViewer = ({ stream, onRemove }) => {
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -113,10 +112,6 @@ const StreamViewer = ({ stream, onRemove }) => {
         console.log('Stream paused message received');
         setIsPlaying(false);
         break;
-
-      case 'speed_changed':
-        setPlaybackSpeed(data.speed);
-        break;
         
       default:
         console.log('Unknown message type:', data.type);
@@ -165,15 +160,7 @@ const StreamViewer = ({ stream, onRemove }) => {
     onRemove(stream.id);
   };
 
-  const handleSpeedChange = (speed) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ 
-        type: 'set_speed', 
-        speed: speed 
-      }));
-      setPlaybackSpeed(speed);
-    }
-  };
+
 
 
 
@@ -300,22 +287,7 @@ const StreamViewer = ({ stream, onRemove }) => {
           </Button>
         </div>
 
-        {/* Speed Controls */}
-        <div className="d-flex align-items-center flex-wrap gap-2 mb-3">
-          <span className="text-muted me-2">Speed:</span>
-          {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
-            <Button
-              key={speed}
-              variant={playbackSpeed === speed ? 'primary' : 'outline-secondary'}
-              size="sm"
-              onClick={() => handleSpeedChange(speed)}
-              disabled={status !== 'connected'}
-              style={{ minWidth: '50px' }}
-            >
-              {speed}x
-            </Button>
-          ))}
-        </div>
+
 
         {/* Stream Info */}
         <div className="border-top pt-2">
