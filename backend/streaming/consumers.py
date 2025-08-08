@@ -131,7 +131,13 @@ class StreamConsumer(AsyncWebsocketConsumer):
 
     async def send_json(self, message):
         """Send JSON message to client"""
-        await self.send(text_data=json.dumps(message))
+        # Handle both direct calls and channel layer calls
+        if isinstance(message, dict) and 'text' in message:
+            # Called from channel layer
+            await self.send(text_data=json.dumps(message['text']))
+        else:
+            # Direct call
+            await self.send(text_data=json.dumps(message))
 
     @database_sync_to_async
     def get_stream_from_db(self):
