@@ -7,20 +7,21 @@ import styled from 'styled-components';
 
 const InputContainer = styled.div`
   background: white;
-  padding: 25px;
+  padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 
   @media (min-width: 768px) {
     flex-direction: row;
     align-items: flex-end;
+    gap: 16px;
   }
 `;
 
@@ -77,10 +78,11 @@ const Button = styled.button`
 `;
 
 const ExampleStreams = styled.div`
-  margin-top: 15px;
-  padding: 15px;
+  margin-top: 16px;
+  padding: 12px;
   background-color: #f8f9fa;
-  border-radius: 5px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
 `;
 
 const ExampleTitle = styled.h4`

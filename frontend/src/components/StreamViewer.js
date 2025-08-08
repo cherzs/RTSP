@@ -8,20 +8,21 @@ import config from '../config';
 
 const StreamContainer = styled.div`
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   position: relative;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   }
 `;
 
 const StreamHeader = styled.div`
-  padding: 15px;
-  background: #2c3e50;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
   color: white;
   display: flex;
   justify-content: space-between;
@@ -83,12 +84,13 @@ const PlaceholderText = styled.div`
 `;
 
 const Controls = styled.div`
-  padding: 15px;
-  background: #ecf0f1;
+  padding: 12px 16px;
+  background: #f8f9fa;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
 `;
 
 const ControlButton = styled.button`
@@ -140,35 +142,41 @@ const ErrorMessage = styled.div`
 const SpeedControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-left: 10px;
+  gap: 4px;
+  flex-wrap: wrap;
 `;
 
 const SpeedButton = styled.button`
-  background-color: ${props => props.$active ? '#27ae60' : '#bdc3c7'};
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
+  background-color: ${props => props.$active ? '#27ae60' : '#e9ecef'};
+  color: ${props => props.$active ? 'white' : '#495057'};
+  border: 1px solid ${props => props.$active ? '#27ae60' : '#dee2e6'};
+  padding: 3px 8px;
+  border-radius: 16px;
   cursor: pointer;
-  font-size: 0.8rem;
-  transition: background-color 0.3s ease;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 32px;
 
   &:hover:not(:disabled) {
-    background-color: ${props => props.$active ? '#229954' : '#95a5a6'};
+    background-color: ${props => props.$active ? '#229954' : '#27ae60'};
+    color: white;
+    border-color: #27ae60;
   }
 
   &:disabled {
-    background-color: #ecf0f1;
-    color: #95a5a6;
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    border-color: #dee2e6;
     cursor: not-allowed;
   }
 `;
 
 const SpeedLabel = styled.span`
-  font-size: 0.8rem;
-  color: #7f8c8d;
+  font-size: 0.75rem;
+  color: #6c757d;
   font-weight: 500;
+  margin-right: 6px;
 `;
 
 const StreamViewer = ({ stream, onRemove }) => {
@@ -367,7 +375,7 @@ const StreamViewer = ({ stream, onRemove }) => {
       </VideoContainer>
 
       <Controls>
-        <div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {!isPlaying ? (
             <ControlButton onClick={handlePlay} disabled={status === 'connecting'}>
               ▶ Play
@@ -377,7 +385,7 @@ const StreamViewer = ({ stream, onRemove }) => {
               ⏸ Pause
             </ControlButton>
           )}
-          <ControlButton onClick={handleStop} style={{ marginLeft: '8px' }}>
+          <ControlButton onClick={handleStop}>
             ⏹ Stop
           </ControlButton>
         </div>
@@ -397,7 +405,7 @@ const StreamViewer = ({ stream, onRemove }) => {
         </SpeedControls>
 
         <ControlButton $variant="danger" onClick={handleRemove}>
-          🗑 Remove
+          Remove
         </ControlButton>
       </Controls>
 

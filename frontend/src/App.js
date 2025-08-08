@@ -18,7 +18,7 @@ const Container = styled.div`
 
 const Header = styled.header`
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
   color: white;
 `;
 
@@ -40,11 +40,12 @@ const Subtitle = styled.p`
 `;
 
 const MainContent = styled.main`
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const StatusBar = styled.div`
