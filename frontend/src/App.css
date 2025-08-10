@@ -32,3 +32,18 @@
     font-size: 1.8rem !important;
   }
 }
+
+/* Fullscreen video adjustments for mobile */
+@media (max-width: 768px) {
+  .stream-fullscreen {
+    height: 400px !important;
+    min-height: 400px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .stream-fullscreen {
+    height: 300px !important;
+    min-height: 300px !important;
+  }
+}

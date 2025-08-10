@@ -51,12 +51,13 @@ const StreamGrid = ({ streams, onRemoveStream, onClearAll }) => {
         {streams.map((stream) => (
           <Col 
             key={stream.id} 
-            xs={12}      // Mobile: 1 per row (full width)
-            lg={6}       // Desktop: 2 per row (half width each)
+            xs={12}      // Mobile: always full width
+            lg={streams.length === 1 ? 12 : 6}  // Desktop: full width if single stream, half width for multiple
           >
             <StreamViewer 
               stream={stream} 
-              onRemove={onRemoveStream} 
+              onRemove={onRemoveStream}
+              isFullscreen={streams.length === 1}
             />
           </Col>
         ))}

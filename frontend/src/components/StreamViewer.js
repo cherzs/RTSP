@@ -14,7 +14,7 @@ import {
 } from 'react-icons/fa';
 import config from '../config';
 
-const StreamViewer = ({ stream, onRemove }) => {
+const StreamViewer = ({ stream, onRemove, isFullscreen = false }) => {
   const [ws, setWs] = useState(null);
   const [status, setStatus] = useState('disconnected');
   const [currentFrame, setCurrentFrame] = useState(null);
@@ -190,10 +190,10 @@ const StreamViewer = ({ stream, onRemove }) => {
 
       {/* Larger Video Container */}
       <div 
-        className="position-relative bg-black d-flex align-items-center justify-content-center"
+        className={`position-relative bg-black d-flex align-items-center justify-content-center ${isFullscreen ? 'stream-fullscreen' : ''}`}
         style={{ 
-          height: '350px',  // Increased from 250px to 350px
-          minHeight: '350px'  // Ensure minimum height
+          height: isFullscreen ? '500px' : '350px',  // Much larger when fullscreen
+          minHeight: isFullscreen ? '500px' : '350px'  // Ensure minimum height
         }}
       >
         {currentFrame ? (
@@ -209,14 +209,14 @@ const StreamViewer = ({ stream, onRemove }) => {
           />
         ) : (
           <div className="text-center text-muted">
-            <div className="mb-3" style={{ fontSize: '3rem', opacity: 0.6 }}>
+            <div className="mb-3" style={{ fontSize: isFullscreen ? '5rem' : '3rem', opacity: 0.6 }}>
               {status === 'error' ? (
                 <FaExclamationTriangle className="text-warning" />
               ) : (
                 <FaVideo />
               )}
             </div>
-            <div style={{ fontSize: '0.9rem' }}>
+            <div style={{ fontSize: isFullscreen ? '1.2rem' : '0.9rem' }}>
               {status === 'connecting' 
                 ? 'Connecting to stream...' 
                 : status === 'error' 
