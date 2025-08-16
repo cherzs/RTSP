@@ -3,7 +3,7 @@
  * Handles WebSocket connection, video display, and stream controls
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, Button, ButtonGroup, Badge, Alert } from 'react-bootstrap';
+import { Button, Badge, Alert } from 'react-bootstrap';
 import { 
   FaPlay, 
   FaPause, 
@@ -162,133 +162,198 @@ const StreamViewer = ({ stream, onRemove, isFullscreen = false }) => {
 
   const getStatusText = () => {
     switch (status) {
-      case 'connected': return 'Connected';
-      case 'connecting': return 'Connecting...';
+      case 'connected': return 'Terhubung';
+      case 'connecting': return 'Menghubungkan...';
       case 'error': return 'Error';
-      default: return 'Disconnected';
+      default: return 'Terputus';
     }
   };
 
   return (
-    <Card className="h-100 shadow-sm">
-      {/* Header */}
-      <Card.Header className="bg-gradient bg-primary text-white d-flex justify-content-between align-items-center">
-        <Card.Title className="mb-0 h6">
-          {stream.title || `Stream ${stream.id.slice(0, 8)}`}
-        </Card.Title>
-        <Badge bg={getStatusVariant()}>
+    <div className="modern-card h-100">
+      {/* Clean Header */}
+      <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div className="d-flex align-items-center gap-3">
+          <div className="p-2 bg-primary bg-opacity-10 rounded-circle">
+            <FaVideo className="text-primary" size={14} />
+          </div>
+          <div>
+            <h6 className="mb-0 text-dark fw-semibold">
+              {stream.title || `Stream ${stream.id.slice(0, 8)}`}
+            </h6>
+            <small className="text-muted">Stream Langsung</small>
+          </div>
+        </div>
+        <Badge 
+          bg={getStatusVariant()} 
+          className="px-3 py-2 rounded-pill badge-enhanced"
+          style={{ fontSize: '0.75rem' }}
+        >
           {getStatusText()}
         </Badge>
-      </Card.Header>
+      </div>
 
       {/* Error Alert */}
       {error && (
-        <Alert variant="danger" className="m-2 mb-0">
-          <small>{error}</small>
+        <Alert variant="danger" className="m-3 mb-0">
+          <div className="d-flex align-items-center gap-2">
+            <FaExclamationTriangle size={14} />
+            <small className="mb-0 fw-medium">{error}</small>
+          </div>
         </Alert>
       )}
 
-      {/* Larger Video Container */}
+      {/* Clean Video Container */}
       <div 
-        className={`position-relative bg-black d-flex align-items-center justify-content-center ${isFullscreen ? 'stream-fullscreen' : ''}`}
+        className={`position-relative bg-dark d-flex align-items-center justify-content-center ${isFullscreen ? 'stream-fullscreen' : ''}`}
         style={{ 
-          height: isFullscreen ? '500px' : '350px',  // Much larger when fullscreen
-          minHeight: isFullscreen ? '500px' : '350px'  // Ensure minimum height
+          height: isFullscreen ? '400px' : '300px',
+          minHeight: isFullscreen ? '400px' : '300px',
+          background: '#f8f9fa'
         }}
       >
         {currentFrame ? (
-          <img 
-            src={currentFrame} 
-            alt="Live stream" 
-            className="img-fluid"
-            style={{ 
-              maxHeight: '100%', 
-              maxWidth: '100%',
-              objectFit: 'contain' 
-            }}
-          />
+          <div className="position-relative w-100 h-100">
+            <img 
+              src={currentFrame} 
+              alt="Live stream" 
+              className="img-fluid w-100 h-100"
+              style={{ 
+                objectFit: 'cover',
+                transition: 'all 0.3s ease'
+              }}
+            />
+            {/* Live indicator */}
+            <div className="position-absolute top-0 start-0 m-3">
+              <Badge bg="danger" className="px-3 py-2 rounded-pill d-flex align-items-center gap-2 fw-bold">
+                <span 
+                  className="bg-white rounded-circle" 
+                  style={{ 
+                    width: '8px', 
+                    height: '8px',
+                    animation: 'pulse 1.5s infinite'
+                  }}
+                ></span>
+                LANGSUNG
+              </Badge>
+            </div>
+          </div>
         ) : (
           <div className="text-center text-muted">
-            <div className="mb-3" style={{ fontSize: isFullscreen ? '5rem' : '3rem', opacity: 0.6 }}>
+            <div className="mb-3">
               {status === 'error' ? (
-                <FaExclamationTriangle className="text-warning" />
+                <FaExclamationTriangle 
+                  className="text-warning" 
+                  size={isFullscreen ? 48 : 36} 
+                />
+              ) : status === 'connecting' ? (
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
               ) : (
-                <FaVideo />
+                <FaVideo 
+                  className="text-muted" 
+                  size={isFullscreen ? 48 : 36} 
+                />
               )}
             </div>
-            <div style={{ fontSize: isFullscreen ? '1.2rem' : '0.9rem' }}>
+            <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem' }} className="fw-medium">
               {status === 'connecting' 
-                ? 'Connecting to stream...' 
+                ? 'Menghubungkan ke stream...' 
                 : status === 'error' 
-                  ? 'Stream unavailable' 
-                  : 'Click Play to start stream'
+                  ? 'Stream tidak tersedia' 
+                  : 'Klik tombol Play untuk memulai'
               }
             </div>
+            {status === 'disconnected' && (
+              <small className="text-muted mt-2 d-block">
+                Stream siap untuk diputar
+              </small>
+            )}
           </div>
         )}
       </div>
 
-      {/* Controls */}
-      <Card.Body className="p-3">
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      {/* Clean Controls */}
+      <div className="p-3 border-top">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           {/* Play Controls */}
-          <ButtonGroup>
+          <div className="d-flex gap-2">
             {!isPlaying ? (
               <Button 
-                variant="primary" 
                 onClick={handlePlay} 
                 disabled={status === 'connecting'}
-                className="d-flex align-items-center gap-2"
+                className="btn-clean btn-primary-clean d-flex align-items-center gap-2"
               >
                 <FaPlay size={12} />
-                Play
+                <span>Putar</span>
               </Button>
             ) : (
               <Button 
-                variant="warning" 
                 onClick={handlePause}
-                className="d-flex align-items-center gap-2"
+                className="btn-clean btn-secondary-clean d-flex align-items-center gap-2"
               >
                 <FaPause size={12} />
-                Pause
+                <span>Jeda</span>
               </Button>
             )}
             <Button 
-              variant="secondary" 
               onClick={handleStop}
-              className="d-flex align-items-center gap-2"
+              className="btn-clean btn-secondary-clean d-flex align-items-center gap-2"
             >
               <FaStop size={12} />
-              Stop
+              <span>Stop</span>
             </Button>
-          </ButtonGroup>
+          </div>
 
           {/* Remove Button */}
           <Button 
-            variant="outline-danger" 
             onClick={handleRemove}
-            className="d-flex align-items-center gap-2"
+            className="btn-clean d-flex align-items-center gap-2"
+            style={{
+              background: 'transparent',
+              border: '1px solid #dc3545',
+              color: '#dc3545'
+            }}
           >
             <FaTrash size={12} />
-            Remove
+            <span>Hapus</span>
           </Button>
         </div>
 
 
 
         {/* Stream Info */}
-        <div className="border-top pt-2">
-          <small className="text-muted d-block text-truncate">
-            {stream.rtsp_url}
-          </small>
+        <div className="mt-3 pt-3 border-top">
+          <div className="mb-2">
+            <h6 className="mb-2 text-dark small fw-semibold d-flex align-items-center gap-2">
+              <FaVideo size={12} className="text-primary" />
+              URL Stream:
+            </h6>
+            <div className="bg-light rounded p-2">
+              <code className="text-dark small d-block text-truncate fw-medium">
+                {stream.rtsp_url}
+              </code>
+            </div>
+          </div>
           {lastUpdate && (
-            <small className="text-muted">
-              Last update: {lastUpdate}
-            </small>
+            <div className="d-flex align-items-center gap-2 mt-3">
+              <div 
+                className="bg-success rounded-circle" 
+                style={{ 
+                  width: '8px', 
+                  height: '8px',
+                  animation: 'pulse 2s infinite'
+                }}
+              ></div>
+              <small className="text-success fw-medium">
+                Terakhir diperbarui: {lastUpdate}
+              </small>
+            </div>
           )}
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    </div>
   );
 };
 

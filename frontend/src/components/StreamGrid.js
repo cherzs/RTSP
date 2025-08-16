@@ -3,45 +3,68 @@
  * Responsive grid with larger video cards - 2 per row on desktop
  */
 import React from 'react';
-import { Row, Col, Card, Button } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import { FaVideo, FaTimes } from 'react-icons/fa';
 import StreamViewer from './StreamViewer';
 
 const StreamGrid = ({ streams, onRemoveStream, onClearAll }) => {
   if (streams.length === 0) {
     return (
-      <Card className="text-center border-0 bg-light">
-        <Card.Body className="py-5">
-          <div className="mb-3" style={{ fontSize: '4rem', opacity: 0.5 }}>
-            <FaVideo className="text-muted" />
-          </div>
-          <Card.Title as="h3" className="text-muted mb-3">
-            No Streams Added Yet
-          </Card.Title>
-          <Card.Text className="text-muted mx-auto" style={{ maxWidth: '400px' }}>
-            Add your first RTSP stream using the form above. You can use one of the example URLs or provide your own camera stream.
-          </Card.Text>
-        </Card.Body>
-      </Card>
+      <div className="text-center py-5">
+        <div 
+          className="d-inline-flex align-items-center justify-content-center rounded-circle bg-light mb-4"
+          style={{ width: '120px', height: '120px' }}
+        >
+          <FaVideo className="text-muted" size={48} />
+        </div>
+        <h3 className="text-dark mb-3 fw-bold">Belum Ada Stream</h3>
+        <p className="text-muted mx-auto mb-4" style={{ maxWidth: '500px' }}>
+          Tambahkan stream RTSP pertama Anda menggunakan form di atas. 
+          Anda dapat menggunakan salah satu contoh URL atau menyediakan stream kamera Anda sendiri.
+        </p>
+        <div className="d-flex justify-content-center gap-2 flex-wrap">
+          <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+            Real-time Streaming
+          </span>
+          <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+            Multi-camera Support
+          </span>
+          <span className="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+            Remote Access
+          </span>
+        </div>
+      </div>
     );
   }
 
   return (
     <>
-      {/* Grid Header */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="text-dark mb-0">
-          {streams.length} Stream{streams.length !== 1 ? 's' : ''}
-        </h4>
+      {/* Clean Grid Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex align-items-center gap-3">
+          <div className="p-2 bg-primary bg-opacity-10 rounded-circle">
+            <FaVideo className="text-primary" size={16} />
+          </div>
+          <div>
+            <h4 className="text-dark mb-0 fw-semibold">
+              {streams.length} Stream{streams.length !== 1 ? 's' : ''} Aktif
+            </h4>
+            <small className="text-muted">Menampilkan semua stream yang tersedia</small>
+          </div>
+        </div>
         {streams.length > 0 && (
           <Button
             variant="outline-danger"
-            size="sm"
             onClick={onClearAll}
-            className="d-flex align-items-center gap-2"
+            className="btn-clean d-flex align-items-center gap-2"
+            style={{
+              background: 'transparent',
+              border: '1px solid #dc3545',
+              color: '#dc3545'
+            }}
           >
             <FaTimes size={12} />
-            Clear All
+            <span>Hapus Semua</span>
           </Button>
         )}
       </div>

@@ -3,7 +3,7 @@
  * Allows users to add new streams with URL validation
  */
 import React, { useState } from 'react';
-import { Form, Row, Col, Button, Card, ListGroup } from 'react-bootstrap';
+import { Form, Row, Col, Button } from 'react-bootstrap';
 import { FaPlus, FaVideo, FaExternalLinkAlt } from 'react-icons/fa';
 
 const StreamInput = ({ onAddStream, loading }) => {
@@ -32,93 +32,118 @@ const StreamInput = ({ onAddStream, loading }) => {
   };
 
   return (
-    <Card className="mb-4 shadow-sm">
-      <Card.Body>
-        <Form onSubmit={handleSubmit}>
-          <Row className="g-3">
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label className="fw-semibold text-dark">
-                  RTSP Stream URL
-                </Form.Label>
-                <Form.Control
-                  type="url"
-                  value={rtspUrl}
-                  onChange={(e) => setRtspUrl(e.target.value)}
-                  placeholder="rtsp://username:password@ip:port/path"
-                  required
-                  disabled={loading}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={4}>
-              <Form.Group>
-                <Form.Label className="fw-semibold text-dark">
-                  Stream Title (Optional)
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="My Camera Stream"
-                  disabled={loading}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={2} className="d-flex align-items-end">
-              <Button 
-                type="submit" 
-                variant="success" 
-                disabled={loading || !rtspUrl.trim()}
-                className="w-100 d-flex align-items-center justify-content-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Adding...
-                  </>
-                ) : (
-                  <>
-                    <FaPlus size={14} />
-                    Add Stream
-                  </>
-                )}
-              </Button>
-            </Col>
-          </Row>
-        </Form>
+    <div className="modern-card p-4 mb-4">
+      <div className="d-flex align-items-center gap-3 mb-4">
+        <div className="p-2 bg-primary bg-opacity-10 rounded-circle">
+          <FaPlus className="text-primary" size={16} />
+        </div>
+        <div>
+          <h5 className="mb-1 text-dark fw-semibold">Tambah Stream Baru</h5>
+          <p className="text-muted mb-0 small">Masukkan URL RTSP atau pilih contoh stream</p>
+        </div>
+      </div>
 
-        {/* Example Streams */}
-        <Card className="mt-3 bg-light border-0">
-          <Card.Body className="py-3">
-            <h6 className="card-title text-dark mb-2 d-flex align-items-center gap-2">
-              <FaVideo className="text-primary" />
-              Example RTSP Streams (click to use):
-            </h6>
-            <ListGroup variant="flush">
-              {exampleStreams.map((url, index) => (
-                <ListGroup.Item 
-                  key={index} 
-                  action
-                  onClick={() => handleExampleClick(url)}
-                  className="px-0 py-2 border-0 bg-transparent"
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="d-flex align-items-center gap-2">
-                    <FaExternalLinkAlt size={10} className="text-muted flex-shrink-0" />
-                    <code className="text-muted small text-truncate">
+      <Form onSubmit={handleSubmit}>
+        <Row className="g-3">
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label className="fw-medium text-dark mb-2">
+                URL Stream RTSP
+              </Form.Label>
+              <Form.Control
+                type="url"
+                value={rtspUrl}
+                onChange={(e) => setRtspUrl(e.target.value)}
+                placeholder="rtsp://username:password@ip:port/path"
+                required
+                disabled={loading}
+                className="border-1 rounded-2"
+                style={{ padding: '12px 16px' }}
+              />
+            </Form.Group>
+          </Col>
+          
+          <Col md={4}>
+            <Form.Group>
+              <Form.Label className="fw-medium text-dark mb-2">
+                Nama Stream (Opsional)
+              </Form.Label>
+              <Form.Control
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Kamera Ruang Tamu"
+                disabled={loading}
+                className="border-1 rounded-2"
+                style={{ padding: '12px 16px' }}
+              />
+            </Form.Group>
+          </Col>
+          
+          <Col md={2} className="d-flex align-items-end">
+            <Button 
+              type="submit" 
+              disabled={loading || !rtspUrl.trim()}
+              className="w-100 btn-clean btn-primary-clean"
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <FaPlus size={14} className="me-2" />
+                  Tambah
+                </>
+              )}
+            </Button>
+          </Col>
+        </Row>
+      </Form>
+
+      {/* Example Streams */}
+      <div className="mt-4 p-3 bg-light rounded-3">
+        <div className="d-flex align-items-center gap-2 mb-3">
+          <FaExternalLinkAlt className="text-primary" size={14} />
+          <h6 className="mb-0 text-dark fw-medium">Contoh Stream (klik untuk menggunakan)</h6>
+        </div>
+        <div className="row g-2">
+          {exampleStreams.map((url, index) => (
+            <div key={index} className="col-12">
+              <div
+                onClick={() => handleExampleClick(url)}
+                className="p-3 bg-white rounded-2 border cursor-pointer"
+                style={{ 
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                  e.currentTarget.style.borderColor = '#dee2e6';
+                }}
+              >
+                <div className="d-flex align-items-center gap-3">
+                  <FaVideo className="text-primary flex-shrink-0" size={14} />
+                  <div className="flex-grow-1 min-w-0">
+                    <p className="mb-1 fw-medium text-dark small">
+                      {index === 0 ? 'RTSP Camera Stream' : 'Sample Video Stream'}
+                    </p>
+                    <code className="text-muted small text-truncate d-block">
                       {url}
                     </code>
                   </div>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </Card.Body>
-        </Card>
-      </Card.Body>
-    </Card>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 

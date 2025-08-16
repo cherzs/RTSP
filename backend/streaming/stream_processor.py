@@ -221,15 +221,31 @@ class StreamProcessor:
                 # Perform object detection
                 results = self.model(frame)
 
-                # Draw bounding boxes and labels on the frame
+                # Draw bounding boxes and labels on the frame with better visibility
                 for result in results:
                     for box in result.boxes:
                         x1, y1, x2, y2 = [int(val) for val in box.xyxy[0]]
                         conf = box.conf[0]
                         cls = box.cls[0]
                         label = f"{self.model.names[int(cls)]} {conf:.2f}"
-                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                        cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        
+                        # Draw bounding box with thicker lines
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                        
+                        # Calculate text size for background
+                        (text_width, text_height), baseline = cv2.getTextSize(
+                            label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
+                        )
+                        
+                        # Draw background rectangle for text
+                        cv2.rectangle(frame, 
+                                    (x1, y1 - text_height - 10), 
+                                    (x1 + text_width, y1), 
+                                    (0, 255, 0), -1)
+                        
+                        # Draw text with better contrast
+                        cv2.putText(frame, label, (x1, y1 - 5), 
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
 
 
                 # Optimize frame processing for speed
@@ -297,13 +313,27 @@ class StreamProcessor:
                             ((i + j) * 255) // (240 + 320)  # Blue gradient
                         ]
 
-                # Add frame counter text
-                cv2.putText(frame, f'Demo Frame {frame_count}', (10, 30),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-                cv2.putText(frame, f'Stream: {self.stream_id[:8]}', (10, 60),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-                cv2.putText(frame, 'RTSP Stream Unavailable', (10, 90),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+                # Add frame counter text with background for better visibility
+                texts = [
+                    (f'Demo Frame {frame_count}', (10, 30), 0.7, (255, 255, 255), 2),
+                    (f'Stream: {self.stream_id[:8]}', (10, 60), 0.5, (255, 255, 255), 2),
+                    ('RTSP Stream Unavailable', (10, 90), 0.5, (255, 255, 0), 2)
+                ]
+                
+                for text, (x, y), scale, color, thickness in texts:
+                    # Calculate text size for background
+                    (text_width, text_height), baseline = cv2.getTextSize(
+                        text, cv2.FONT_HERSHEY_SIMPLEX, scale, thickness
+                    )
+                    
+                    # Draw background rectangle for text
+                    cv2.rectangle(frame, 
+                                (x - 2, y - text_height - 2), 
+                                (x + text_width + 2, y + baseline + 2), 
+                                (0, 0, 0), -1)
+                    
+                    # Draw text
+                    cv2.putText(frame, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, scale, color, thickness)
 
                 # Convert frame to JPEG
                 _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])

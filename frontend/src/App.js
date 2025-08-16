@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import { FaVideo, FaSignal, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StreamInput from './components/StreamInput';
@@ -100,64 +100,55 @@ function App() {
 
   return (
     <div className="app-container">
-      <Container fluid className="py-4">
-        <Row>
-          <Col>
-            {/* Header */}
-            <header className="text-center mb-4 text-white">
-              <h1 className="display-4 fw-bold mb-2 d-flex align-items-center justify-content-center gap-3">
-                <FaVideo className="text-primary" />
-                RTSP Stream Viewer
-              </h1>
-              <p className="lead opacity-75 d-flex align-items-center justify-content-center gap-2">
-                <FaSignal size={18} />
-                View live RTSP camera streams in your browser
-              </p>
-            </header>
+      {/* Clean Header Section */}
+      <div className="header-section">
+        <Container>
+          <h1 className="header-title">
+            RTSP Stream Viewer
+          </h1>
+        </Container>
+      </div>
 
-            {/* Main Content */}
-            <main className="main-content">
-              {message && (
-                <Alert 
-                  variant={message.type} 
-                  dismissible 
-                  onClose={() => setMessage(null)}
-                  className="d-flex align-items-center"
-                >
-                  <span className="me-2">
-                    {message.type === 'danger' && <FaExclamationTriangle />}
-                    {message.type === 'success' && <FaCheckCircle />}
-                    {message.type === 'info' && <FaSignal />}
-                  </span>
-                  {message.text}
-                </Alert>
-              )}
+      {/* Main Content */}
+      <Container className="py-5">
+        {message && (
+          <Alert 
+            variant={message.type} 
+            dismissible 
+            onClose={() => setMessage(null)}
+            className="d-flex align-items-center mb-4"
+          >
+            <span className="me-2">
+              {message.type === 'danger' && <FaExclamationTriangle />}
+              {message.type === 'success' && <FaCheckCircle />}
+              {message.type === 'info' && <FaSignal />}
+            </span>
+            {message.text}
+          </Alert>
+        )}
 
-              <StreamInput onAddStream={handleAddStream} loading={loading} />
-              
-              <StreamGrid 
-                streams={streams} 
-                onRemoveStream={handleRemoveStream}
-                onClearAll={handleClearAll}
-              />
-            </main>
+        <StreamInput onAddStream={handleAddStream} loading={loading} />
+        
+        <StreamGrid 
+          streams={streams} 
+          onRemoveStream={handleRemoveStream}
+          onClearAll={handleClearAll}
+        />
 
-            {/* Footer */}
-            <footer className="text-center mt-5 text-white-50">
-              <p className="mb-0">
-                Built with React & Django | 
-                <a 
-                  href="https://github.com/cherzs/RTSP" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-white-50 text-decoration-none ms-1"
-                >
-                  View Source Code
-                </a>
-              </p>
-            </footer>
-          </Col>
-        </Row>
+        {/* Clean Footer */}
+        <footer className="text-center mt-5 pt-4 border-top">
+          <p className="text-muted mb-0">
+            Built with React & Django | 
+            <a 
+              href="https://github.com/cherzs/RTSP" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-decoration-none ms-1"
+            >
+              View Source Code
+            </a>
+          </p>
+        </footer>
       </Container>
     </div>
   );
